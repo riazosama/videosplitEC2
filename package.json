@@ -1,0 +1,11 @@
+{
+  "name": "patient-registration-form",
+  "version": "1.11.7",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.715.0",
+    "fluent-ffmpeg": "^2.1.2"
+  }
+}
