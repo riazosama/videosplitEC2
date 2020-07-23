@@ -106,7 +106,15 @@ const deleteMessage = (receiptHandle) => {
   });
 };
 
-const createAudio = (filename, ext) => {
+const createAudio = async(filename, ext) => {
+
+  const {streams} = await getVideoMeta(`${filename}.${ext}`)
+
+  if (streams.length !== 2) {
+    console.log("No Audio Detected")
+    return;
+  }
+
   return new Promise((res, rej) => {
     ffmpeg(`./input/${filename}.${ext}`)
       .noVideo()
@@ -151,6 +159,7 @@ const createVideoWithoutAudio = async (filename, ext) => {
     }
   });
 };
+
 
 (async () => {
   const sqs = await getMessageFromSQS();
