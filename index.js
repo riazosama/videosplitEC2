@@ -224,13 +224,6 @@ const createVideoWithoutAudio = async (filename, ext) => {
 
   console.log("Nothing to process.\nStopping EC2 Instance.")
 
-  console.log("-------");
-  console.log("-------");
-  console.log("Stopping Instance in 5 Min")
-  console.log("-------");
-  console.log("-------");
-  setTimeout(async () => {
-    await stopEC2()
-  }, 300000)
+  await stopEC2();
 
 })();
