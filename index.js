@@ -9,7 +9,7 @@ const s3 = new aws.S3();
 const BUCKETNAME = "serverlessvideo1-bucket";
 const SQS_URL = "https://sqs.us-east-2.amazonaws.com/506464813465/serverlessvideo1-sqs"
 
-const stopEC2 = async() => {
+const stopEC2 = async () => {
   const ec2 = new aws.EC2({ region: "us-east-2" });
   try {
     await ec2.stopInstances({ InstanceIds: ["i-0cdbc5787ca65c8ed"] }).promise();
@@ -67,24 +67,38 @@ const getVideoMeta = (key) => {
 }
 
 const uploadFile = (path, key) => {
-  fs.readFile(path, (err, data) => {
-    if (err) console.error(err);
-    var base64data = new Buffer(data, "binary");
-    var params = {
-      Bucket: BUCKETNAME,
-      Key: key,
-      Body: base64data,
-    };
-    return new Promise((res, rej) => {
+
+  if (!fs.existsSync(path)) {
+    console.log(path, "No file found to upload. Skipping now....")
+    return;
+  }
+
+  return new Promise((res, rej) => {
+    fs.readFile(path, (err, data) => {
+      if (err) console.error(err);
+      var base64data = new Buffer(data, "binary");
+      var params = {
+        Bucket: BUCKETNAME,
+        Key: key,
+        Body: base64data,
+      };
       s3.upload(params, (err, data) => {
         if (err) rej(err);
         res("Upload Complete");
       });
-    });
+
+    })
+
   });
-};
+}
 
 const deleteFilesLocally = (path) => {
+
+  if (!fs.existsSync(path)) {
+    console.log("No file found to delete. Skipping now....")
+    return;
+  }
+
   return new Promise((res, rej) => {
     fs.unlink(path, (err) => {
       if (err) rej(err);
@@ -106,9 +120,9 @@ const deleteMessage = (receiptHandle) => {
   });
 };
 
-const createAudio = async(filename, ext) => {
+const createAudio = async (filename, ext) => {
 
-  const {streams} = await getVideoMeta(`${filename}.${ext}`)
+  const { streams } = await getVideoMeta(`${filename}.${ext}`)
 
   if (streams.length !== 2) {
     console.log("No Audio Detected")
@@ -144,7 +158,7 @@ const createVideoWithoutAudio = async (filename, ext) => {
         .on("progress", function (data) {
           console.log(`Converting ${filename}: ${Math.ceil(data.percent)}%`)
         })
-        .save(`./output/${filename}-vid.mp4`);
+        .save(`./output/${filename}-vid.${ext}`);
     } else {
       ffmpeg(`./input/${filename}.${ext}`)
         .noAudio()
@@ -155,7 +169,7 @@ const createVideoWithoutAudio = async (filename, ext) => {
         .on("progress", function (data) {
           console.log(`Converting ${filename}: ${Math.ceil(data.percent)}%`)
         })
-        .save(`./output/${filename}-vid.mp4`);
+        .save(`./output/${filename}-vid.${ext}`);
     }
   });
 };
@@ -189,15 +203,15 @@ const createVideoWithoutAudio = async (filename, ext) => {
           `output/${filename}-${currentTime}/${filename}-audio.mp3`
         ),
         uploadFile(
-          `./output/${filename}-vid.mp4`,
-          `output/${filename}-${currentTime}/${filename}-vid-.mp4`
+          `./output/${filename}-vid.${ext}`,
+          `output/${filename}-${currentTime}/${filename}-vid.${ext}`
         ),
       ]);
       console.log("Files Uploaded");
       await Promise.all([
         deleteFilesLocally(`./output/${filename}-audio.mp3`),
-        deleteFilesLocally(`./output/${filename}-vid.mp4`),
-        deleteFilesLocally(`./input/${filename}.mp4`),
+        deleteFilesLocally(`./output/${filename}-vid.${ext}`),
+        deleteFilesLocally(`./input/${filename}.${ext}`),
       ]);
       console.log("Files Deleted Locally");
       await deleteMessage(file.ReceiptHandle);
@@ -209,6 +223,14 @@ const createVideoWithoutAudio = async (filename, ext) => {
   }
 
   console.log("Nothing to process.\nStopping EC2 Instance.")
-  await stopEC2()
+
+  console.log("-------");
+  console.log("-------");
+  console.log("Stopping Instance in 5 Min")
+  console.log("-------");
+  console.log("-------");
+  setTimeout(async () => {
+    await stopEC2()
+  }, 300000)
 
 })();
