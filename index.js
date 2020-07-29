@@ -210,15 +210,14 @@ const createVideoWithoutAudio = async (filename, ext) => {
         createVideoWithoutAudio(filename, ext),
       ]);
       logger.info("File converted")
-      const currentTime = new Date().toISOString();
       await Promise.all([
         uploadFile(
           `./output/${filename}-audio.mp3`,
-          `output/${filename}-${currentTime}/${filename}-audio.mp3`
+          `output/${filename}/${filename}-audio.mp3`
         ),
         uploadFile(
           `./output/${filename}-vid.${ext}`,
-          `output/${filename}-${currentTime}/${filename}-vid.${ext}`
+          `output/${filename}/${filename}-vid.${ext}`
         ),
       ]);
       logger.info("Files Uploaded")
