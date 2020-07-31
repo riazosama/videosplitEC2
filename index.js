@@ -54,6 +54,7 @@ const downloadFile = (key) => {
   return new Promise((res, rej) => {
     s3.getObject(params, (err, data) => {
       if (err) {
+        logger.info(params);
         logger.info(err);
         return rej(err)
       };
@@ -198,7 +199,7 @@ const createVideoWithoutAudio = async (filename, ext) => {
     const cleaned = Messages.map(res => ({ message: JSON.parse(res.Body), ReceiptHandle: res.ReceiptHandle }))
 
     for (let file of cleaned) {
-      const key = file.message.key.replace(/\+/g, " ");
+      const key = unescape(file.message.key.replace(/\+/g, " "));
       const ext = key.split(".").pop()
       const filename = key.split(".").slice(0, -1).join(".");
       logger.info("starting to download...")
