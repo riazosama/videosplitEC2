@@ -139,7 +139,7 @@ const createAudio = async (filename, ext) => {
 
   const { streams } = await getVideoMeta(`${filename}.${ext}`)
 
-  if (streams.length !== 2) {
+  if (streams.length === 1) {
     logger.info("No Audio Detected")
     return;
   }
