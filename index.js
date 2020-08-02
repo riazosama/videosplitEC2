@@ -173,7 +173,7 @@ const createVideoWithoutAudio = async (filename, ext) => {
         .on("progress", function (data) {
           logger.info(`Converting ${filename}: ${Math.ceil(data.percent)}%`)
         })
-        .save(`./output/${filename}-vid.${ext}`);
+        .save(`./output/${filename}-vid.mp4`);
     } else {
       ffmpeg(`./input/${filename}.${ext}`)
         .noAudio()
@@ -184,11 +184,10 @@ const createVideoWithoutAudio = async (filename, ext) => {
         .on("progress", function (data) {
           logger.info(`Converting ${filename}: ${Math.ceil(data.percent)}%`)
         })
-        .save(`./output/${filename}-vid.${ext}`);
+        .save(`./output/${filename}-vid.mp4`);
     }
   });
 };
-
 
 (async () => {
   const sqs = await getMessageFromSQS();
@@ -217,14 +216,14 @@ const createVideoWithoutAudio = async (filename, ext) => {
           `output/${filename}/${filename}-audio.mp3`
         ),
         uploadFile(
-          `./output/${filename}-vid.${ext}`,
-          `output/${filename}/${filename}-vid.${ext}`
+          `./output/${filename}-vid.mp4`,
+          `output/${filename}/${filename}-vid.mp4`
         ),
       ]);
       logger.info("Files Uploaded")
       await Promise.all([
         deleteFilesLocally(`./output/${filename}-audio.mp3`),
-        deleteFilesLocally(`./output/${filename}-vid.${ext}`),
+        deleteFilesLocally(`./output/${filename}-vid.mp4`),
         deleteFilesLocally(`./input/${filename}.${ext}`),
       ]);
       logger.info("Files Deleted Locally")
